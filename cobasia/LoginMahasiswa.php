@@ -11,24 +11,31 @@ if (isset($_POST['nim']) && isset($_POST['password'])) {
 	$nim = $_POST['nim'];
 	$password = $_POST['password'];
 	
-	if (!($nim === '') && !($password === '')) {	
-		// get the user by email and password
-		// get user berdasarkan email dan password
-		$user = $db->getMhsByNimAndPassword($nim, $password);
- 
-		if ($user != false) {
-			// user ditemukan
-			$response["error"] = FALSE;
-			//$response["uid"] = $user["unique_id"];
-			$response["user"]["nim"] = $user["nim"];
-			//$response["user"]["email"] = $user["email"];
-			echo json_encode($response);
-		} else {
-			// user tidak ditemukan password/email salah
+	$regex = '/[^A-Za-z0-9\.]/';
+	
+	if (!($nim === '') && !($password === '')) {
+		if((preg_match($regex, $nim) || substr_count($nim, '.') > 1) || (preg_match($regex, $password) || substr_count($password, '.') > 1)){
 			$response["error"] = TRUE;
 			$response["error_msg"] = "Login gagal. NIM atau Password salah";
 			echo json_encode($response);
+		} else {
+			// get the user by email and password
+			// get user berdasarkan email dan password
+			$user = $db->getMhsByNimAndPassword($nim, $password);
+ 
+			if ($user != false) {
+				// user ditemukan
+				$response["error"] = FALSE;
+				$response["user"]["nim"] = $user["nim"];
+				echo json_encode($response);
+			} else {
+				// user tidak ditemukan password/email salah
+				$response["error"] = TRUE;
+				$response["error_msg"] = "Login gagal. NIM atau Password salah";
+				echo json_encode($response);
+			}
 		}
+		
 	} else {
 		$response["error"] = TRUE;
 		$response["error_msg"] = "NIM atau password tidak boleh kosong";

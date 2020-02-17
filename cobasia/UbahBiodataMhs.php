@@ -30,9 +30,7 @@ if (isset($_POST['nim']) && isset($_POST['kodeKabLahir']) && isset($_POST['tempa
 	$tglLahirAyah = $_POST['tglLahirAyah'];
 	$namaIbu = $_POST['namaIbu'];
 	$tglLahirIbu = $_POST['tglLahirIbu'];
-	//$nikAyah = $_POST['nikAyah'];
 	if(!empty($_POST['nikAyah'])) { $nikAyah = $_POST['nikAyah']; } else { $nikAyah = NULL; }
-	//$nikIbu = $_POST['nikIbu'];
 	if(!empty($_POST['nikIbu'])) { $nikIbu = $_POST['nikIbu']; } else { $nikIbu = NULL; }
 	
     // get the user by email and password
@@ -51,7 +49,6 @@ if (isset($_POST['nim']) && isset($_POST['kodeKabLahir']) && isset($_POST['tempa
 			$namaIbu, $tglLahirIbu, $nikAyah, $nikIbu);
 			$response["error"] = FALSE;
 			$response["message"] = "Biodata berhasil diubah";
-			//$response["user"]["nim"] = $user["nim"];
 			echo json_encode($response);
 		}
     } else {

@@ -16,62 +16,8 @@ class DB_Functions {
     function __destruct() {
          
     }
- 
-    /*public function simpanUser($nama, $email, $password) {
-        $uuid = uniqid('', true);
-        $hash = $this->hashSSHA($password);
-        $encrypted_password = $hash["encrypted"]; // encrypted password
-        $salt = $hash["salt"]; // salt
- 
-        $stmt = $this->conn->prepare("INSERT INTO tbl_user(unique_id, nama, email, encrypted_password, salt) VALUES(?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $uuid, $nama, $email, $encrypted_password, $salt);
-        $result = $stmt->execute();
-        $stmt->close();
- 
-        // cek jika sudah sukses
-        if ($result) {
-            $stmt = $this->conn->prepare("SELECT * FROM tbl_user WHERE email = ?");
-            $stmt->bind_param("s", $email);
-            $stmt->execute();
-            $user = $stmt->get_result()->fetch_assoc();
-            $stmt->close();
- 
-            return $user;
-        } else {
-            return false;
-        }
-    }*/
- 
-    /**
-     * Get user berdasarkan email dan password
-     */
-    public function getMhsByNimAndPassword($nim, $password) {
- 
-		if ($stmt = $this->conn->prepare("SELECT * FROM password5314 WHERE nim = ? AND password = ?")) {
- 
-			$stmt->bind_param("ss", $nim, $password);
- 
-			if ($stmt->execute()) {
-				$user = $stmt->get_result()->fetch_assoc();
-				$stmt->close();
- 
-				// verifikasi password user
-				/*$salt = $user['salt'];
-				$encrypted_password = $user['encrypted_password'];
-				$hash = $this->checkhashSSHA($salt, $password);
-				// cek password jika sesuai
-				if ($encrypted_password == $hash) {
-					// autentikasi user berhasil
-					return $user;
-				}*/
-				return $user;
-			} else {
-				return NULL;
-			}
-		}
-    }
 	
-	public function getDosenByEmailAndPassword($user, $password) {
+	public function getDosenByUserAndPassword($user, $password) {
  
 		if ($stmt = $this->conn->prepare("SELECT * FROM sdm.passwordpegawai s WHERE s.user = ? AND s.password = ?")) {
  
@@ -88,28 +34,6 @@ class DB_Functions {
 		}
     }
 	
-	/**
-	 * Mengganti password user 
-	 */
-	public function ubahPasswordMhs($nim, $passwordbaru) {
-		
-		if ($stmt = $this->conn->prepare("UPDATE password5314 SET password = ? WHERE nim = ?")) {
-			
-			$stmt->bind_param("ss", $passwordbaru, $nim);
-			
-			if ($stmt->execute()) {
-				$stmt->close();
-				
-				//echo "Password berhasil diubah";
-				return true;
-			} else {
-				echo "Gagal mengubah password";
-				//return false;
-			}
-		}
-		
-	}
-	
 	public function ubahPasswordDosen($user, $passwordbaru) {
 		
 		if ($stmt = $this->conn->prepare("UPDATE sdm.passwordpegawai s SET s.password = ? WHERE s.user = ?")) {
@@ -125,6 +49,25 @@ class DB_Functions {
 			}
 		}
 		
+	}
+	
+	public function ubahBiodataDosen($kode_pegawai, $glr_dpn, $glr_blk, $nik, $npwp, $alamat_skr, $telp_rumah, $no_hp1, $email1, $tempat_lahir, $tgl_lahir, $nama_status_keluar, $nama_stats_pegawai, $nidn, $alamat_ktp, $email2, $no_hp2){
+
+		$queryKodeStatusKeluar = "SELECT kode_status_keluar FROM acuan.status_keluar WHERE nama_status_keluar = ?";
+		$queryKodeStatusPegawai = "SELECT kode_status_pegawai FROM acuan.status_pegawai WHERE nama_stats_pegawai = ?";
+		
+		if ($stmt = $this->conn->prepare("UPDATE sdm.pegawai p SET glr_dpn = ?, glr_blk = ?, nik = ?, npwp = ?, alamat_skr = ?, telp_rumah = ?, no_hp1 = ?, email1 = ?, tempat_lahir = ?, tgl_lahir = ?, kode_status_keluar = (".$queryKodeStatusKeluar."), kode_status_pegawai = (".$queryKodeStatusPegawai."), nidn = ?, alamat_ktp = ?, email2 = ?, no_hp2 = ? WHERE p.kode_pegawai = ?")) {
+			
+			$stmt->bind_param("sssssssssssssssss", $glr_dpn, $glr_blk, $nik, $npwp, $alamat_skr, $telp_rumah, $no_hp1, $email1, $tempat_lahir, $tgl_lahir, $nama_status_keluar, $nama_stats_pegawai, $nidn, $alamat_ktp, $email2, $no_hp2, $kode_pegawai);
+			
+			if ($stmt->execute()) {
+				$stmt->close();
+				
+				return true;
+			} else {
+				echo "Gagal update biodata";
+			}
+		}
 	}
 	
 	public function getDosen($kode_pegawai){
@@ -210,42 +153,42 @@ class DB_Functions {
 		}
 	}
 	
-	public function ubahBiodataDosen($kode_pegawai, $glr_dpn, $glr_blk, $nik, $npwp, $alamat_skr, $telp_rumah, $no_hp1, $email1, $tempat_lahir, $tgl_lahir, $nama_status_keluar, $nama_stats_pegawai, $nidn, $alamat_ktp, $email2, $no_hp2){
-
-		$queryKodeStatusKeluar = "SELECT kode_status_keluar FROM acuan.status_keluar WHERE nama_status_keluar = ?";
-		$queryKodeStatusPegawai = "SELECT kode_status_pegawai FROM acuan.status_pegawai WHERE nama_stats_pegawai = ?";
-		
-		if ($stmt = $this->conn->prepare("UPDATE sdm.pegawai p SET glr_dpn = ?, glr_blk = ?, nik = ?, npwp = ?, alamat_skr = ?, telp_rumah = ?, no_hp1 = ?, email1 = ?, tempat_lahir = ?, tgl_lahir = ?, kode_status_keluar = (".$queryKodeStatusKeluar."), kode_status_pegawai = (".$queryKodeStatusPegawai."), nidn = ?, alamat_ktp = ?, email2 = ?, no_hp2 = ? WHERE p.kode_pegawai = ?")) {
-			
-			$stmt->bind_param("sssssssssssssssss", $glr_dpn, $glr_blk, $nik, $npwp, $alamat_skr, $telp_rumah, $no_hp1, $email1, $tempat_lahir, $tgl_lahir, $nama_status_keluar, $nama_stats_pegawai, $nidn, $alamat_ktp, $email2, $no_hp2, $kode_pegawai);
-			
+	/**
+     * Get user berdasarkan email dan password
+     */
+    public function getMhsByNimAndPassword($nim, $password) {
+ 
+		if ($stmt = $this->conn->prepare("SELECT * FROM password5314 WHERE nim = ? AND password = ?")) {
+ 
+			$stmt->bind_param("ss", $nim, $password);
+ 
 			if ($stmt->execute()) {
+				$user = $stmt->get_result()->fetch_assoc();
 				$stmt->close();
-				
-				return true;
+				return $user;
 			} else {
-				echo "Gagal update biodata";
+				return NULL;
 			}
 		}
-	}
+    }
 	
-	public function ubahKodeKabupatenLahir($nim, $kodeKabLahir) {
-		$query = "UPDATE mahasiswa5314 SET kode_kabupaten_lahir = (SELECT kode_kabupaten FROM acuan.kabupaten WHERE nama_kabupaten = ?) WHERE nim = ?";
+	/**
+	 * Mengganti password user 
+	 */
+	public function ubahPasswordMhs($nim, $passwordbaru) {
 		
-		if ($stmt = $this->conn->prepare($query)) {
+		if ($stmt = $this->conn->prepare("UPDATE password5314 SET password = ? WHERE nim = ?")) {
 			
-			$stmt->bind_param("ss", $kodeKabLahir, $nim);
+			$stmt->bind_param("ss", $passwordbaru, $nim);
 			
 			if ($stmt->execute()) {
 				$stmt->close();
-				
-				//echo "Password berhasil diubah";
 				return true;
 			} else {
-				echo "Gagal mengubah biodata";
-				//return false;
+				echo "Gagal mengubah password";
 			}
 		}
+		
 	}
 	
 	/**
@@ -269,15 +212,6 @@ class DB_Functions {
 				$mhs = $stmt->get_result()->fetch_assoc();
 				$stmt->close();
  
-				// verifikasi password user
-				/*$salt = $user['salt'];
-				$encrypted_password = $user['encrypted_password'];
-				$hash = $this->checkhashSSHA($salt, $password);
-				// cek password jika sesuai
-				if ($encrypted_password == $hash) {
-					// autentikasi user berhasil
-					return $user;
-				}*/
 				return $mhs;
 			} else {
 				return NULL;
@@ -291,97 +225,13 @@ class DB_Functions {
     public function getAllKabupaten() {
  
 		if ($stmt = $this->conn->query("SELECT nama_kabupaten from acuan.kabupaten")) {
- 
-			//$stmt->bind_param("s", $nim);
- 
-			//if ($stmt->execute()) {
 			$output = array();
 			while ($baris = mysqli_fetch_assoc($stmt)) {
-				//$output[] = $baris['nama_kabupaten'];
 				array_push($output,array("kabupaten"=>$baris['nama_kabupaten']));
 			}
 			echo json_encode(array('result'=>$output));
-			//$jumlahBaris = $stmt->num_rows;
-			//if($jumlahBaris >= 1) {
-				//$row_all = mysqli_fetch_all($stmt,MYSQLI_ASSOC);
-				//header('Content-type: application/json');
-				//echo json_encode($row_all); 		
-			//} else {
-				//echo "no rows";
-			//} 
-			//} else {
-				//return NULL;
-			//}
 		}
     }
-	
-	public function getStatusPegawai($kodePegawai) {
-		if ($stmt = $this->conn->prepare("SELECT nama_stats_pegawai FROM acuan.status_pegawai s INNER JOIN
-		sdm.pegawai p ON p.kode_status_pegawai = s.kode_status_pegawai WHERE p.kode_pegawai = ?")) {
-			
-			$stmt->bind_param("s", $kodePegawai);
-			
-			if ($stmt->execute()) {
-				$statuspegawai = $stmt->get_result()->fetch_assoc();
-				$stmt->close();
-				
-				return $statuspegawai;
-			} else {
-				return NULL;
-			}
-			
-		}
-	}
- 
-    /**
-     * Cek User ada atau tidak
-     */
-    /*public function isUserExisted($email) {
-        $stmt = $this->conn->prepare("SELECT email from tbl_user WHERE email = ?");
- 
-        $stmt->bind_param("s", $email);
- 
-        $stmt->execute();
- 
-        $stmt->store_result();
- 
-        if ($stmt->num_rows > 0) {
-            // user telah ada 
-            $stmt->close();
-            return true;
-        } else {
-            // user belum ada 
-            $stmt->close();
-            return false;
-        }
-    }*/
- 
-    /**
-     * Encrypting password
-     * @param password
-     * returns salt and encrypted password
-     */
-    /*public function hashSSHA($password) {
- 
-        $salt = sha1(rand());
-        $salt = substr($salt, 0, 10);
-        $encrypted = base64_encode(sha1($password . $salt, true) . $salt);
-        $hash = array("salt" => $salt, "encrypted" => $encrypted);
-        return $hash;
-    }*/
- 
-    /**
-     * Decrypting password
-     * @param salt, password
-     * returns hash string
-     */
-    /*public function checkhashSSHA($salt, $password) {
- 
-        $hash = base64_encode(sha1($password . $salt, true) . $salt);
- 
-        return $hash;
-    }*/
- 
 }
  
 ?>
